@@ -165,8 +165,9 @@
 <p>Create a <code>.env.local</code> file in the root directory:</p>
 <pre><code class="language-sh">NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+CRON_SECRET=a_long_random_string
 </code></pre>
-<p>You can find these in your Supabase project dashboard under <em>Project Settings → API</em>.</p>
+<p>You can find the Supabase values in your project dashboard under <em>Project Settings → API</em>. <code>CRON_SECRET</code> protects the <code>/api/health</code> endpoint — generate one with <code>openssl rand -hex 32</code>.</p>
 
 <h3>Database Setup</h3>
 <p>Run the following SQL in your Supabase SQL Editor to create the required tables and policies:</p>
@@ -245,6 +246,16 @@ set source = 'librivox';
 
 update audiobooks
 set created_at = now() - (random() \* interval '90 days');
+</code></pre>
+
+<h3>Keep-Alive / Health Check</h3>
+<p>Supabase pauses free-plan projects after 7 days without activity. <code>vercel.json</code> schedules a daily request to <code>/api/health</code>, which runs <code>public.health_stats()</code> and returns the number of users, audiobooks, favorites and saved progress entries.</p>
+<ol>
+<li class="my-0">Run <code>supabase/health_stats.sql</code> in the Supabase SQL Editor (required for the user count).</li>
+<li class="my-0">Set <code>CRON_SECRET</code> in Vercel → Project Settings → Environment Variables. Vercel Cron sends it automatically as <code>Authorization: Bearer $CRON_SECRET</code>.</li>
+<li class="my-0">Using another scheduler? Call <code>GET /api/health</code> with an <code>x-cron-secret</code> header instead, and delete the <code>crons</code> entry from <code>vercel.json</code>.</li>
+</ol>
+<pre><code class="language-sh">curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/health
 </code></pre>
 
 <h3>Seeding Data</h3>
