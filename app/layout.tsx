@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
@@ -47,6 +48,7 @@ export default async function RootLayout({
 						</div>
 					</div>
 				</ClientLayout>
+				<Analytics />
 			</body>
 		</html>
 	);
